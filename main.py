@@ -197,6 +197,167 @@ class MRP:
         
         return fig
     
+
+class ESM:
+    
+    def __init__(self,K,c,h,D):
+        """
+        Parameters
+        ----------
+        K : float
+            The fixed ordering cost.
+        c : float
+            The unit ordering cost.
+        h : float
+            The unit holding cost.
+        D : float
+            Demand data.
+        """
+    
+        self.K,self.c,self.h,self.D = float(K),float(c),float(h),float(D)
+            
+    def brZamanSabitMal(self,Q):
+        return (self.K*self.D)/Q
+    
+    def brZamanDegMal(self):
+        return self.D*self.c
+    
+    def brZamanElBulMal(self,Q):
+        return self.h*Q/2.
+    
+    def brZamanTopMal(self,Q):
+        return self.brZamanSabitMal(Q)+self.brZamanDegMal()+self.brZamanElBulMal(Q)
+    
+    def donguUzunl(self,Q):
+        return Q/self.D
+    
+    def optSipMikt(self):
+        return (2*self.K*self.D/self.h)**.5
+
+
+class ESM_GecTes:
+    
+    def __init__(self,K,c,h,D,pi):
+        """
+        Parameters
+        ----------
+        K : float
+            The fixed ordering cost.
+        c : float
+            The unit ordering cost.
+        h : float
+            The unit holding cost.
+        D : float
+            Demand data.
+        """
+    
+        self.K,self.c,self.h,self.pi,self.D = float(K),float(c),float(h),float(pi),float(D)
+            
+    def brZamanSabitMal(self,Q):
+        return (self.K*self.D)/Q
+    
+    def brZamanDegMal(self):
+        return self.D*self.c
+    
+    def brZamanElBulMal(self,Q,B):
+        return self.h*(Q-B)**2/(2*Q)
+
+    def brZamanCezaMal(self,Q,B):
+        return self.pi*(B)**2/(2*Q)
+    
+    def brZamanTopMal(self,Q,B):
+        return self.brZamanSabitMal(Q)+self.brZamanDegMal()+self.brZamanElBulMal(Q,B)+self.brZamanCezaMal(Q,B)
+    
+    def donguUzunl(self,Q):
+        return Q/self.D
+    
+    def pozdonguUzunl(self,Q,B):
+        return (Q-B)/self.D
+    
+    def negdonguUzunl(self,B):
+        return (B)/self.D
+    
+    def optSipMikt(self):
+        return (2*self.K*self.D*(self.h+self.pi)/(self.h*self.pi))**.5
+    
+    def optGecTesMikt(self,Q):
+        return Q*self.h/(self.h+self.pi) 
+
+
+class EUM:
+    
+    def __init__(self,K,c,h,D,P):
+        """
+        Parameters
+        ----------
+        K : float
+            The fixed ordering cost.
+        c : float
+            The unit ordering cost.
+        h : float
+            The unit holding cost.
+        D : float
+            Demand data.
+        """
+    
+        self.K,self.c,self.h,self.D,self.P = float(K),float(c),float(h),float(D),float(P)
+            
+    def brZamanSabitMal(self,Q):
+        return (self.K*self.D)/Q
+    
+    def brZamanDegMal(self):
+        return self.D*self.c
+    
+    def brZamanElBulMal(self,Q):
+        return (self.h*Q*(1-self.D/self.P))/2.
+    
+    def brZamanTopMal(self,Q):
+        return self.brZamanSabitMal(Q)+self.brZamanDegMal()+self.brZamanElBulMal(Q)
+    
+    def donguUzunl(self,Q):
+        return Q/self.D
+    
+    def optSipMikt(self):
+        return (2*self.K*self.D/(self.h*(1-self.D/self.P)))**.5
+    
+    def uretdongUzunl(self,Q):
+        return Q/self.P
+    
+    def maxEnvSev(self,Q):
+        return Q * (1-self.D/self.P)
+
+
+
+class ESM_MI:
+    
+    def __init__(self,K,cs,alpha,D):
+    
+        self.K,self.cs,self.alpha,self.D = float(K),cs,float(alpha),float(D)
+    
+    
+    def hesaplaQ(self,a,b,c):
+        instance = ESM(self.K, c, c*self.alpha, self.D)
+        if instance.optSipMikt() > b: 
+            return (b,c)
+        elif instance.optSipMikt() < a:
+            return (a,c)
+        else: 
+            return (instance.optSipMikt(),c)
+        
+    def TopMal(self):
+        
+        best_Obj, best_Q, best_c = (float('inf'),float('inf'),float('inf'))
+
+        for (a,b,c) in self.cs:
+            Q,c = self.hesaplaQ(a, b, c)
+            instance = ESM(self.K, c, c*self.alpha, self.D)
+            TC = instance.brZamanTopMal(Q)
+            if TC <= best_Obj:
+                best_Obj, best_Q, best_c  = TC, Q, c
+        
+        return (best_Obj,best_Q, best_c)
+
+
     
 if __name__ == "__main__":
     
@@ -205,4 +366,4 @@ if __name__ == "__main__":
     print(c.SM())
     print(c.LUC())
     print(c.LFL())
-    # c.PlotGraph()
+    c.PlotGraph()
